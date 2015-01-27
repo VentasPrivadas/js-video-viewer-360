@@ -1,6 +1,6 @@
-# JS library to display videos for 360 images sets
+# JS library to display videos from 360 images sets
 
-## Create video for images set
+## Create video from images set
 
     avconv -r 1 -i %04d.jpg -vf "scale=500:500" video.webm
 

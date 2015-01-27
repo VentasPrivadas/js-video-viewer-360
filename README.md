@@ -6,22 +6,25 @@
 
 ## Use example
 
-    <div id="video" data-src="video.webm"></div>
+```html
+<div id="my-viewer" data-src="video.webm"></div>
 
+```
 
-    $(document).ready(function() {
+```javascript
+$(document).ready(function() {
 
-        var viewer = new jsVideoViewer360({
-            el: 'video',
-            fps: 1,
-            frames: 72,
-            direction: 'clockwise',
-            fpsOnPlay: 25,
-            moveInterval: 20,
-        });
-
-        viewer.init();
-
+    var viewer = new jsVideoViewer360({
+        el: 'my-viewer',
+        fps: 1,
+        frames: 36,
+        direction: 'clockwise',
+        fpsOnPlay: 25,
+        moveInterval: 20,
     });
 
+    viewer.init();
+
+});
+```
 

@@ -68,18 +68,7 @@ var jsVideoViewer360 = function(params) {
     };
 
     this.setVideo = function() {
-        var src = this.params.el.attr('data-src');
-        if (src) {
-            this.video = $('<video src="' + src + '"/>');
-        }
-    };
-
-    this.getVideo = function() {
-        if (this.video == null) {
-            throw new Error('video not set');
-        }
-
-        return this.video;
+        this.video = $('<video />');
     };
 
     this.setFps = function(fps) {
@@ -122,12 +111,11 @@ var jsVideoViewer360 = function(params) {
     this.initVideo = function() {
         var self = this;
 
-        var video = this.getVideo();
-        video.css('cursor', 'pointer');
+        this.video.css('cursor', 'pointer');
 
-        video.on({
+        this.video.on({
             loadedmetadata: function() {
-                self.getEl().append(video);
+                self.getEl().append(self.video);
                 setInterval(function() {
                     if ( ! self.state.paused ) {
                         self.move(self.state.lastMove);
@@ -160,6 +148,9 @@ var jsVideoViewer360 = function(params) {
                 return false;
             },
         });
+
+        var src = this.getEl().attr('data-src');
+        this.video.attr('src', src);
     };
 
     this.mouseUpNearDownPosition = function(event) {
@@ -169,7 +160,7 @@ var jsVideoViewer360 = function(params) {
     };
 
     this.moveRight = function() {
-        var video = this.getVideo().get(0);
+        var video = this.video.get(0);
         if (video.currentTime >= this.state.lastTime) {
             video.currentTime = 0;
         } else {
@@ -178,7 +169,7 @@ var jsVideoViewer360 = function(params) {
     };
 
     this.moveLeft = function() {
-        var video = this.getVideo().get(0);
+        var video = this.video.get(0);
         if (video.currentTime < this.state.frameDuration) {
             video.currentTime = this.state.lastTime;
         } else {

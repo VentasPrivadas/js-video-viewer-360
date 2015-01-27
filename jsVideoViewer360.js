@@ -13,7 +13,7 @@ var jsVideoViewer360 = function(params) {
 
     this.state = {
         frameDuration: 0,
-        lastFrame: 0,
+        lastTime: 0,
         lastMove: 'right',
         lastX: 0,
         paused: false,
@@ -98,7 +98,7 @@ var jsVideoViewer360 = function(params) {
 
     this.initState = function() {
         this.state.frameDuration = 1.0 / this.params.fps;
-        this.state.lastFrame = 
+        this.state.lastTime = 
             this.state.frameDuration * (this.params.frames - 1);
     };
 
@@ -153,7 +153,7 @@ var jsVideoViewer360 = function(params) {
 
     this.moveRight = function() {
         var video = this.getVideo().get(0);
-        if (video.currentTime >= this.state.lastFrame) {
+        if (video.currentTime >= this.state.lastTime) {
             video.currentTime = 0;
         } else {
             video.currentTime += this.state.frameDuration;
@@ -163,7 +163,7 @@ var jsVideoViewer360 = function(params) {
     this.moveLeft = function() {
         var video = this.getVideo().get(0);
         if (video.currentTime < this.state.frameDuration) {
-            video.currentTime = this.state.lastFrame;
+            video.currentTime = this.state.lastTime;
         } else {
             video.currentTime -= this.state.frameDuration;
         }

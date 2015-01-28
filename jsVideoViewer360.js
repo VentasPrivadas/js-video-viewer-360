@@ -15,56 +15,54 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-var jsVideoViewer360 = function(params) {
+var jsVideoViewer360 = function(options) {
 
     this.video = null;
 
-    this.params = {
+    this.options = {
         el: null,
-        fps: 1,
+        fps: 12,
         frames: 24,
         direction: 'clockwise',
-        fpsOnPlay: 12,
-        moveInterval: 50,
+        moveInterval: 100,
+        cursor: 'pointer',
     };
 
     this.state = {
         frameDuration: 0,
         lastTime: 0,
-        lastMove: 'right',
         lastX: 0,
         paused: false,
         mouseDown: false,
-        mouseDownX: 0,
     };
 
     this.init = function() {
-        if (params) {
-            this.setEl(params.el);
-            this.setFps(params.fps);
-            this.setFrames(params.frames);
-            this.setDirection(params.direction);
-            this.setFpsOnPlay(params.fpsOnPlay);
-            this.setMoveInterval(params.moveInterval);
+        if (options) {
+            this.setEl(options.el);
+            this.setFps(options.fps);
+            this.setFrames(options.frames);
+            this.setDirection(options.direction);
+            this.setMoveInterval(options.moveInterval);
+            this.setCursor(options.cursor);
         }
 
         this.initState();
         this.setVideo();
         this.initVideo();
 
-        this.tMove = this.throttle(this.move, this.params.moveInterval);
+        this.tMove = this.throttle(this.move, this.options.moveInterval);
     };
 
     this.setEl = function(el) {
-        this.params.el = $('#' + el);
+        this.options.el = $('#' + el);
     };
 
     this.getEl = function() {
-        if (this.params.el == null) {
+        if (this.options.el == null) {
             throw new Error('el is not defined');
         }
 
-        return this.params.el;
+        return this.options.el;
     };
 
     this.setVideo = function() {
@@ -73,67 +71,64 @@ var jsVideoViewer360 = function(params) {
 
     this.setFps = function(fps) {
         if (fps !== undefined) {
-            this.params.fps = fps;
+            this.options.fps = fps;
         }
     };
 
     this.setFrames = function(frames) {
         if (frames !== undefined) {
-            this.params.frames = frames;
+            this.options.frames = frames;
         }
     };
 
     this.setDirection = function(direction) {
         if (direction == 'clockwise' ||
             direction == 'counterclockwise') {
-            this.params.direction = direction;
-        }
-    };
-
-    this.setFpsOnPlay = function(fpsOnPlay) {
-        if (fpsOnPlay !== undefined) {
-            this.params.fpsOnPlay = fpsOnPlay;
+            this.options.direction = direction;
         }
     };
 
     this.setMoveInterval = function(moveInterval) {
         if (moveInterval !== undefined) {
-            this.params.moveInterval = moveInterval;
+            this.options.moveInterval = moveInterval;
+        }
+    };
+
+    this.setCursor = function(cursor) {
+        if (cursor !== undefined) {
+            this.options.cursor = cursor;
         }
     };
 
     this.initState = function() {
-        this.state.frameDuration = 1.0 / this.params.fps;
+        this.state.frameDuration = 1.0 / this.options.fps;
         this.state.lastTime = 
-            this.state.frameDuration * (this.params.frames - 1);
+            this.state.frameDuration * (this.options.frames - 1);
     };
 
     this.initVideo = function() {
         var self = this;
 
-        this.video.css('cursor', 'pointer');
+        this.video.attr('loop', 'loop');
+        this.video.css('cursor', self.options.cursor);
 
         this.video.on({
             loadedmetadata: function() {
                 self.getEl().append(self.video);
-                setInterval(function() {
-                    if ( ! self.state.paused ) {
-                        self.move(self.state.lastMove);
-                    }
-                }, (1000 / self.params.fpsOnPlay));
+                self.video.get(0).play();
             },
             mousedown: function(event) {
                 self.state.mouseDown = true;
-                self.state.mouseDownX = event.pageX;
                 self.state.lastX = event.pageX;
-                self.state.paused = true;
+                self.video.get(0).pause();
             },
-            mouseup: function(event) {
-                self.state.paused = ! self.mouseUpNearDownPosition(event);
+            mouseup: function() {
                 self.state.mouseDown = false;
+                self.video.get(0).play();
             },
             mouseout: function() {
                 self.state.mouseDown = false;
+                self.video.get(0).play();
             },
             mousemove: function(event) {
                 if (self.state.mouseDown) {
@@ -151,12 +146,6 @@ var jsVideoViewer360 = function(params) {
 
         var src = this.getEl().attr('data-src');
         this.video.attr('src', src);
-    };
-
-    this.mouseUpNearDownPosition = function(event) {
-        var xDown = this.state.mouseDownX;
-        var xUp = event.pageX;
-        return (xUp >= (xDown - 5) && xUp <= (xDown + 5));
     };
 
     this.moveRight = function() {
@@ -178,8 +167,7 @@ var jsVideoViewer360 = function(params) {
     };
 
     this.move = function(moveTo) {
-        this.state.lastMove = moveTo;
-        if (this.params.direction == 'counterclockwise') {
+        if (this.options.direction == 'counterclockwise') {
             moveTo = (moveTo == 'right') ? 'left' : 'right';
         }
         if (moveTo == 'right') {

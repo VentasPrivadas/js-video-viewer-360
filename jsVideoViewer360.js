@@ -1,5 +1,5 @@
 /*
- * jsVideoViewer.js: an HTML5 video viewer for 360 images sets
+ *  jsVideoViewer.js v0.0.1 | An HTML5 video viewer for 360 images sets
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as published by
@@ -23,17 +23,16 @@ var jsVideoViewer360 = function(options) {
         el: null,
         fps: 12,
         frames: 24,
-        direction: 'clockwise',
+        rotation: 'clockwise',
         moveInterval: 100,
         cursor: 'pointer',
     };
 
     this.state = {
-        frameDuration: 0,
-        lastTime: 0,
         lastX: 0,
         paused: false,
         mouseDown: false,
+        isChrome: window.chrome,
     };
 
     this.init = function() {
@@ -41,16 +40,18 @@ var jsVideoViewer360 = function(options) {
             this.setEl(options.el);
             this.setFps(options.fps);
             this.setFrames(options.frames);
-            this.setDirection(options.direction);
+            this.setRotation(options.rotation);
             this.setMoveInterval(options.moveInterval);
             this.setCursor(options.cursor);
         }
 
-        this.initState();
         this.setVideo();
         this.initVideo();
 
-        this.tMove = this.throttle(this.move, this.options.moveInterval);
+        this.tMove = this.throttle(
+            this.move,
+            this.options.moveInterval
+        );
     };
 
     this.setEl = function(el) {
@@ -81,10 +82,10 @@ var jsVideoViewer360 = function(options) {
         }
     };
 
-    this.setDirection = function(direction) {
-        if (direction == 'clockwise' ||
-            direction == 'counterclockwise') {
-            this.options.direction = direction;
+    this.setRotation = function(rotation) {
+        if (rotation == 'clockwise' ||
+            rotation == 'counterclockwise') {
+            this.options.rotation = rotation;
         }
     };
 
@@ -100,12 +101,6 @@ var jsVideoViewer360 = function(options) {
         }
     };
 
-    this.initState = function() {
-        this.state.frameDuration = 1.0 / this.options.fps;
-        this.state.lastTime = 
-            this.state.frameDuration * (this.options.frames - 1);
-    };
-
     this.initVideo = function() {
         var self = this;
 
@@ -115,28 +110,28 @@ var jsVideoViewer360 = function(options) {
         this.video.on({
             loadedmetadata: function() {
                 self.getEl().append(self.video);
-                self.video.get(0).play();
+                self.play();
             },
             mousedown: function(event) {
                 self.state.mouseDown = true;
                 self.state.lastX = event.pageX;
-                self.video.get(0).pause();
+                self.pause();
             },
             mouseup: function() {
                 self.state.mouseDown = false;
-                self.video.get(0).play();
+                self.play();
             },
             mouseout: function() {
                 self.state.mouseDown = false;
-                self.video.get(0).play();
+                self.play();
             },
             mousemove: function(event) {
                 if (self.state.mouseDown) {
-                    if (event.pageX < self.state.lastX)  {
-                        self.tMove('left');
-                    }
                     if (event.pageX > self.state.lastX) {
-                        self.tMove('right');
+                        self.tMove('backward');
+                    }
+                    if (event.pageX < self.state.lastX)  {
+                        self.tMove('forward');
                     }
                     self.state.lastX = event.pageX;
                 };
@@ -148,33 +143,82 @@ var jsVideoViewer360 = function(options) {
         this.video.attr('src', src);
     };
 
-    this.moveRight = function() {
+    this.getForwardTime = function(video) {
+        var frame = this.getCurrentFrame() + 1;
+        var frameTime = this.getFrameTime();
+        var semiFrameTime = this.getSemiFrameTime();
+        var time = (frameTime * frame) + semiFrameTime;
+        return (time > video.duration) ? semiFrameTime : time;
+    };
+
+    this.moveForward = function() {
         var video = this.video.get(0);
-        if (video.currentTime >= this.state.lastTime) {
-            video.currentTime = 0;
+        video.currentTime = this.getForwardTime(video);
+    };
+
+    this.getBackwardTime = function(video) {
+        var frame = this.getCurrentFrame() - 1;
+        var frameTime = this.getFrameTime();
+        var semiFrameTime = this.getSemiFrameTime();
+        var time = frameTime * frame;
+        if (time < 0) {
+            return (this.state.isChrome)
+                ? video.duration - frameTime - semiFrameTime
+                : video.duration - semiFrameTime;
         } else {
-            video.currentTime += this.state.frameDuration;
+            return time + semiFrameTime;
         }
     };
 
-    this.moveLeft = function() {
+    this.getFrameTime = function() {
+        return 1 / this.options.fps;
+    };
+
+    this.getSemiFrameTime = function() {
+        return this.getFrameTime() / 2;
+    };
+
+    this.moveBackward = function() {
         var video = this.video.get(0);
-        if (video.currentTime < this.state.frameDuration) {
-            video.currentTime = this.state.lastTime;
+        video.currentTime = this.getBackwardTime(video);
+    };
+
+    this.forward = function() {
+        this.move('forward');
+    };
+
+    this.backward = function() {
+        this.move('backward');
+    };
+
+    this.move = function(direction) {
+        if (this.options.rotation == 'counterclockwise') {
+            direction = (direction == 'forward')
+                ? 'backward' : 'forward';
+        }
+        if (direction == 'forward') {
+            this.moveForward();
         } else {
-            video.currentTime -= this.state.frameDuration;
+            this.moveBackward();
         }
     };
 
-    this.move = function(moveTo) {
-        if (this.options.direction == 'counterclockwise') {
-            moveTo = (moveTo == 'right') ? 'left' : 'right';
-        }
-        if (moveTo == 'right') {
-            this.moveRight();
-        } else {
-            this.moveLeft();
-        }
+    this.play = function() {
+        this.video.get(0).play();
+    };
+
+    this.pause = function() {
+        this.video.get(0).pause();
+    };
+
+    this.isPaused = function() {
+        return this.video.get(0).paused;
+    };
+
+    this.getCurrentFrame = function() {
+        return Math.floor(
+            this.video.get(0).currentTime * this.options.fps
+        );
     };
 
     this.now = Date.now || function() {

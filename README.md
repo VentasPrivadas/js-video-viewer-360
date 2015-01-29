@@ -1,13 +1,17 @@
 # JS library to display videos from 360 images sets
 
+## Requirements
+
+ - jQuery (tested only with v1.8.2)
+
 ## Create video from images set
 
-    avconv -r 1 -i %04d.jpg -vf "scale=500:500" video.webm
+    avconv -f image2 -r 12 -i %04d.jpg -vf "scale=500:500" -b 8192k product.webm
 
 ## Use example
 
 ```html
-<div id="my-viewer" data-src="video.webm"></div>
+<div id="product-viewer" data-src="product.webm"></div>
 
 ```
 
@@ -15,12 +19,12 @@
 $(document).ready(function() {
 
     var viewer = new jsVideoViewer360({
-        el: 'my-viewer',
-        fps: 1,
-        frames: 36,
-        direction: 'clockwise',
-        fpsOnPlay: 25,
-        moveInterval: 20,
+        el: 'product-viewer',
+        fps: 12,
+        frames: 24,
+        rotation: 'clockwise',
+        moveInterval: 100,
+        cursor: 'pointer',
     });
 
     viewer.init();

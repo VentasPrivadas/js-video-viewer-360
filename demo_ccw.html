@@ -1,0 +1,56 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>jsVideoViewer360</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+    <script src="jsVideoViewer360.min.js"></script>
+    <style type="text/css">
+        #controls {
+            width: 500px;
+            text-align: center;
+        }
+    </style>
+    <script>
+        $(document).ready(function() {
+
+            var viewer = new jsVideoViewer360({
+                el: 'product-viewer',
+                fps: 12,
+                frames: 24,
+                rotation: 'counterclockwise',
+                moveInterval: 100,
+                cursor: 'pointer',
+            });
+
+            viewer.init();
+
+            $('#play-pause').click(function() {
+                if (viewer.isPaused()) {
+                    viewer.play();
+                } else {
+                    viewer.pause();
+                }
+            });
+
+            $('#forward').click(function() {
+                viewer.pause();
+                viewer.forward();
+            });
+
+            $('#backward').click(function() {
+                viewer.pause();
+                viewer.backward();
+            });
+        });
+    </script>
+</head>
+<body>
+    <div id="product-viewer" data-src="product_ccw.webm"></div>
+    <div id="controls">
+        <button id="forward">&lt;&lt;</button>
+        <button id="play-pause">play-pause</button>
+        <button id="backward">&gt;&gt;</button>
+    </div>
+</body>
+</html>

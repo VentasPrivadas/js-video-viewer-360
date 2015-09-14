@@ -26,6 +26,7 @@ var jsVideoViewer360 = function(options) {
         rotation: 'clockwise',
         moveInterval: 100,
         cursor: 'pointer',
+        autoplay: true,
     };
 
     this.state = {
@@ -43,6 +44,7 @@ var jsVideoViewer360 = function(options) {
             this.setRotation(options.rotation);
             this.setMoveInterval(options.moveInterval);
             this.setCursor(options.cursor);
+            this.setAutoplay(options.autoplay);
         }
 
         this.setVideo();
@@ -101,6 +103,12 @@ var jsVideoViewer360 = function(options) {
         }
     };
 
+    this.setAutoplay = function(autoplay) {
+        if (autoplay !== undefined) {
+            this.options.autoplay = autoplay;
+        }
+    };
+
     this.initVideo = function() {
         var self = this;
 
@@ -110,7 +118,9 @@ var jsVideoViewer360 = function(options) {
         this.video.on({
             loadedmetadata: function() {
                 self.getEl().append(self.video);
-                self.play();
+                if (self.options.autoplay) {
+                    self.play(); 
+                }
             },
             mousedown: function(event) {
                 self.state.mouseDown = true;
@@ -119,11 +129,15 @@ var jsVideoViewer360 = function(options) {
             },
             mouseup: function() {
                 self.state.mouseDown = false;
-                self.play();
+                if (self.options.autoplay) {
+                    self.play(); 
+                }
             },
             mouseout: function() {
                 self.state.mouseDown = false;
-                self.play();
+                if (self.options.autoplay) {
+                    self.play(); 
+                }
             },
             mousemove: function(event) {
                 if (self.state.mouseDown) {

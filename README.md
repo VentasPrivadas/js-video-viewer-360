@@ -25,6 +25,7 @@ $(document).ready(function() {
         rotation: 'clockwise',
         moveInterval: 100,
         cursor: 'pointer',
+        autoplay: true,
     });
 
     viewer.init();

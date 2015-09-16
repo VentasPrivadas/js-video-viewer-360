@@ -26,6 +26,7 @@ $(document).ready(function() {
         moveInterval: 100,
         cursor: 'pointer',
         autoplay: true,
+        playbackRate: 1.0,
     });
 
     viewer.init();
